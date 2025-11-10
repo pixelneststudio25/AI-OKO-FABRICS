@@ -755,6 +755,59 @@
                 min-width: 250px;
             }
         }
+        /* Mobile Navbar Height Reduction */
+        @media (max-width: 768px) {
+            header {
+                padding: 8px 0 !important;
+            }
+    
+            .header-container {
+                padding: 0 !important;
+            }
+    
+            .logo img {
+                height: 30px !important; /* Reduced from 35px */
+            }
+    
+            .mobile-menu-btn {
+                font-size: 20px !important; /* Smaller menu icon */
+            }
+    
+            .nav-icons a {
+                font-size: 16px !important; /* Smaller icons */
+                margin-left: 12px !important;
+            }
+    
+            nav {
+                top: 60px !important; /* Adjusted for smaller header */
+                height: calc(100vh - 60px) !important;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            header {
+                padding: 6px 0 !important;
+            }
+    
+            .logo img {
+                height: 28px !important;
+            }
+    
+            .mobile-menu-btn {
+                font-size: 18px !important;
+            }
+    
+            .nav-icons a {
+                font-size: 15px !important;
+                margin-left: 10px !important;
+            }
+    
+            nav {
+                top: 55px !important;
+                height: calc(100vh - 55px) !important;
+         b  }
+        }
     </style>
 </head>
 <body>
