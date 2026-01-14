@@ -29,6 +29,7 @@ function addToCart(productId) {
     
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
     updateCartCount();
+    updateFloatingCart(); // NEW: Update floating cart button
     
     // Show confirmation
     showCartNotification('Added to cart!');
@@ -40,6 +41,7 @@ function removeFromCart(productId) {
     cart = cart.filter(item => item.id !== productId);
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
     updateCartCount();
+    updateFloatingCart(); // NEW: Update floating cart button
     
     // Refresh cart display if on cart page
     if (window.location.pathname.includes('cart.html')) {
@@ -62,11 +64,34 @@ function updateQuantity(productId, newQuantity) {
     if (item) {
         item.quantity = newQuantity;
         localStorage.setItem(CART_KEY, JSON.stringify(cart));
+        updateFloatingCart(); // NEW: Update floating cart button
         
         // Refresh cart display if on cart page
         if (window.location.pathname.includes('cart.html')) {
             displayCartItems();
         }
+    }
+}
+
+// NEW FUNCTION: Update floating cart button
+function updateFloatingCart() {
+    const cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
+    const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    
+    const floatingBadge = document.getElementById('floatingCartCount');
+    const floatingBtn = document.getElementById('floatingCartBtn');
+    
+    if (floatingBadge) {
+        floatingBadge.textContent = totalItems;
+        floatingBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+    }
+    
+    // Add animation when cart updates
+    if (floatingBtn && totalItems > 0) {
+        floatingBtn.classList.add('cart-updated');
+        setTimeout(() => {
+            floatingBtn.classList.remove('cart-updated');
+        }, 500);
     }
 }
 
@@ -229,10 +254,42 @@ function showCartNotification(message) {
     }, 3000);
 }
 
-// Initialize cart page
-if (window.location.pathname.includes('cart.html')) {
-    document.addEventListener('DOMContentLoaded', function() {
-        displayCartItems();
-        updateCartCount();
-    });
+// NEW: Initialize floating cart on all pages
+function initializeFloatingCart() {
+    // Update floating cart count on page load
+    updateFloatingCart();
+    
+    // Check if we need to add cart-updated animation class
+    const style = document.createElement('style');
+    style.textContent = `
+        .cart-updated {
+            animation: cartPulse 0.5s ease;
+        }
+        @keyframes cartPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
 }
+
+// Initialize cart on all pages
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize floating cart
+    initializeFloatingCart();
+    
+    // Initialize cart page if needed
+    if (window.location.pathname.includes('cart.html')) {
+        displayCartItems();
+    }
+    
+    // Update cart count (for header if it exists)
+    if (typeof updateCartCount === 'function') {
+        updateCartCount();
+    }
+});
+
+// Make functions available globally
+window.updateFloatingCart = updateFloatingCart;
+window.initializeFloatingCart = initializeFloatingCart;
