@@ -170,7 +170,30 @@ function displayCartItems() {
     `;
 }
 
-// Proceed to checkout
+// Configuration - IMPORTANT: Update this with your GitHub Pages URL
+const SITE_CONFIG = {
+    // Set this to your ACTUAL GitHub Pages URL
+    baseUrl: 'https://pixelneststudio25.github.io/AI-OKO-FABRICS/',
+    whatsappNumber: '2349060185654',
+    businessName: 'Ai-oko Fabrics',
+    
+    // This will detect if we're running locally or on GitHub
+    getBaseUrl: function() {
+        // If we're running on GitHub Pages (https)
+        if (window.location.hostname.includes('github.io')) {
+            return window.location.origin;
+        }
+        // If testing locally, return the configured GitHub URL
+        else if (window.location.protocol === 'file:') {
+            // Return your GitHub Pages URL for testing
+            return this.baseUrl;
+        }
+        // Fallback for any other scenario
+        return this.baseUrl;
+    }
+};
+
+// Proceed to checkout using WhatsApp Webview
 function proceedToCheckout() {
     const cart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
     
@@ -179,18 +202,52 @@ function proceedToCheckout() {
         return;
     }
     
-    // For now, redirect to WhatsApp with order details
-    const orderDetails = cart.map(item => 
-        `${item.quantity}x ${item.name} - ${formatPrice(item.price * item.quantity)}`
-    ).join('%0A');
+    // Generate unique order ID (shorter format)
+    const orderId = 'AIKO' + Date.now().toString().slice(-8);
     
+    // Optimize cart data for URL (smaller payload)
+    const optimizedCart = cart.map(item => ({
+        i: item.id,
+        n: item.name.substring(0, 20), // Shorten name
+        p: item.price,
+        q: item.quantity,
+        s: item.size?.substring(0, 1) || 'S'
+    }));
+    
+    // Encode cart data for URL
+    const cartString = JSON.stringify(optimizedCart);
+    const cartEncoded = btoa(cartString);
+    
+    // Get the correct base URL
+    const baseUrl = SITE_CONFIG.getBaseUrl();
+    
+    // Create order summary URL
+    // Remove trailing slash if present and add page
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const orderSummaryUrl = `${cleanBaseUrl}/order-summary.html?o=${orderId}&c=${cartEncoded}`;
+    
+    // Create WhatsApp message with link
+    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = total > 50000 ? 0 : 2000;
-    const finalTotal = total + shipping;
     
-    const message = `New Order from Ai-oko Fabrics Website%0A%0A${orderDetails}%0A%0ATotal: ${formatPrice(finalTotal)}%0A%0APlease contact customer for shipping details.`;
+    const message = `🛒 *New Order - Ai-oko Fabrics* 🛒%0A%0A` +
+                   `Items: ${itemCount} | Total: ${formatPrice(total)}%0A%0A` +
+                   `📋 View order with photos:%0A` +
+                   `${orderSummaryUrl}%0A%0A` +
+                   `Please open link in WhatsApp to confirm.`;
     
-    window.open(`https://wa.me/2349060185654?text=${message}`, '_blank');
+    // Encode URL for WhatsApp (double encode to ensure it works)
+    const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Open WhatsApp
+    window.open(whatsappUrl, '_blank');
+    
+    // Optional: Save last order for reference
+    localStorage.setItem('aioko-last-order', JSON.stringify({
+        id: orderId,
+        timestamp: new Date().toISOString(),
+        url: orderSummaryUrl
+    }));
 }
 
 // Show cart notification
