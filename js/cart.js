@@ -230,14 +230,22 @@ function proceedToCheckout() {
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    const message = `🛒 *New Order - Ai-oko Fabrics* 🛒%0A%0A` +
-                   `Items: ${itemCount} | Total: ${formatPrice(total)}%0A%0A` +
-                   `📋 View order with photos:%0A` +
-                   `${orderSummaryUrl}%0A%0A` +
-                   `Please open link in WhatsApp to confirm.`;
+    // CRITICAL FIX: Build message differently to avoid URL being split
+    // WhatsApp automatically recognizes URLs if they're not broken by %0A
+    const message = `🛒 *New Order - Ai-oko Fabrics* 🛒
+
+Items: ${itemCount} | Total: ${formatPrice(total)}
+
+📋 View order with photos:
+${orderSummaryUrl}
+
+Please open link in WhatsApp to confirm.`;
     
-    // Encode URL for WhatsApp (double encode to ensure it works)
-    const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    // Encode the entire message for WhatsApp
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Build WhatsApp URL
+    const whatsappUrl = `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodedMessage}`;
     
     // Open WhatsApp
     window.open(whatsappUrl, '_blank');
@@ -310,7 +318,6 @@ function showCartNotification(message) {
         }
     }, 3000);
 }
-
 // NEW: Initialize floating cart on all pages
 function initializeFloatingCart() {
     // Update floating cart count on page load
