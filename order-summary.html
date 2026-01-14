@@ -209,45 +209,54 @@
             return urlParams.get('orderId') || urlParams.get('cart') || 'ORDER-' + Date.now();
         }
 
-        // Load order data
+        // In order-summary.html, replace the loadOrderData function with this:
         async function loadOrderData() {
-            const orderId = getOrderIdFromURL();
-            const loadingState = document.getElementById('loadingState');
-            const orderContainer = document.getElementById('orderContainer');
-            
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('o') || urlParams.get('orderId');
+            const cartEncoded = urlParams.get('c') || urlParams.get('cart');
+    
             try {
-                // Try to get cart from localStorage first (for same-device flow)
-                let cart = JSON.parse(localStorage.getItem('aioko-cart')) || [];
-                
-                // If no cart in localStorage, check URL for encoded cart data
-                if (cart.length === 0) {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const cartData = urlParams.get('cart');
-                    
-                    if (cartData) {
-                        try {
-                            // Decode base64 cart data
-                            const decoded = atob(cartData);
-                            cart = JSON.parse(decoded);
-                        } catch (e) {
-                            console.error('Error parsing cart data from URL:', e);
-                        }
-                    }
+                let cart = [];
+        
+                // Decode cart from URL
+                  if (cartEncoded) {
+                    const decoded = atob(cartEncoded);
+                    const optimizedCart = JSON.parse(decoded);
+            
+                    // Convert back to full cart structure
+                    cart = optimizedCart.map(item => {
+                        // Find the original product to get full details
+                        const originalProduct = findProductById(item.i) || {};
+                        return {
+                            id: item.i,
+                            name: originalProduct.name || item.n || 'Product',
+                            price: item.p,
+                            quantity: item.q,
+                            size: item.s === 'S' ? 'Standard' : 
+                                  item.s === 'M' ? 'Medium' : 
+                                  item.s === 'L' ? 'Large' : item.s,
+                            image: originalProduct.image || 'default-image.jpg'
+                        };
+                    });
                 }
-                
+        
+                // Fallback: try localStorage
+                 if (cart.length === 0) {
+                    cart = JSON.parse(localStorage.getItem('aioko-cart')) || [];
+                }
+        
                 if (cart.length === 0) {
                     showError("No order found. Please add items to your cart first.");
                     return;
                 }
-                
+        
                 // Calculate totals
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const shipping = subtotal > 50000 ? 0 : 2000;
                 const total = subtotal + shipping;
-                
-                // Render order
+        
                 renderOrder(orderId, cart, subtotal, shipping, total);
-                
+        
             } catch (error) {
                 console.error('Error loading order:', error);
                 showError("Could not load your order. Please try again.");
