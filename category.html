@@ -30,7 +30,7 @@
         
         .quick-view-image img {
             width: 100%;
-            height: 400px;
+            height: 500px;
             object-fit: cover;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -225,7 +225,13 @@
                         <i class="fas fa-spinner fa-spin"></i> Loading color filters...
                     </div>
                 </div>
+                <button class="color-toggle-btn" id="colorToggleBtn">
+                    <span>Show More Colors</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
+        </div>
+    </section>
 
             <!-- Design Gallery with Infinite Scroll -->
             <div class="design-gallery" id="design-gallery">
@@ -926,6 +932,9 @@
             // Initialize gallery
             ColorGallery.init(category);
             
+            // Initialize the expandable color filters
+            setupColorFilterExpand(); // <-- ADDED THIS LINE
+            
             // Close modal when clicking outside
             document.addEventListener('click', function(e) {
                 const modal = document.getElementById('quickViewModal');
@@ -951,10 +960,10 @@
             ColorGallery.closeQuickView();
         };
     </script>
+    <!-- Floating Cart Button -->
     <a href="cart.html" class="floating-cart-btn" id="floatingCartBtn">
         <i class="fas fa-shopping-bag"></i>
         <span class="floating-cart-badge" id="floatingCartCount">0</span>
     </a>
 </body>
-
 </html>
