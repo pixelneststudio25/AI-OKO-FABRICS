@@ -2735,3 +2735,74 @@ footer {
         padding-top: 133.33%;
     }
 }
+
+@media (max-width: 768px) {
+    /* Fix for color filter bar to show toggle button */
+    .color-filter-bar {
+        max-height: 200px !important; /* Increased to show toggle button */
+        overflow: visible !important;
+        position: relative;
+        padding-bottom: 70px; /* Make room for the toggle button */
+    }
+    
+    .color-tags-container {
+        max-height: 140px !important; /* Slightly reduced to make room for button */
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .color-tags-container.expanded {
+        max-height: 300px !important;
+        overflow-y: auto;
+    }
+    
+    .color-toggle-wrapper {
+        position: absolute !important;
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+        z-index: 100;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .color-toggle-btn {
+        width: 100%;
+        margin: 0;
+        background: var(--primary) !important;
+        color: white !important;
+        border: none !important;
+        padding: 12px !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .color-filter-bar.expanded {
+        max-height: 450px !important; /* More height when expanded */
+        padding-bottom: 15px; /* Reset padding when expanded */
+    }
+    
+    .color-filter-bar.expanded .color-toggle-wrapper {
+        position: static !important;
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .color-filter-bar {
+        max-height: 190px !important;
+        padding-bottom: 65px;
+    }
+    
+    .color-tags-container {
+        max-height: 120px !important;
+    }
+    
+    .color-tags-container.expanded {
+        max-height: 250px !important;
+    }
+    
+    .color-filter-bar.expanded {
+        max-height: 400px !important;
+    }
+}
