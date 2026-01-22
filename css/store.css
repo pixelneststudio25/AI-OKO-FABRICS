@@ -2393,3 +2393,122 @@ footer {
     transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+
+/* ============================================
+   MOBILE-FRIENDLY COLOR FILTER TOGGLE
+   ============================================ */
+
+/* Ensure button is visible on mobile */
+.color-toggle-btn {
+    display: flex !important; /* Force display */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: white;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 3px 10px rgba(125, 60, 255, 0.1);
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    .color-filter-bar {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .color-tags-container {
+        max-height: 100px !important; /* Default collapsed height on mobile */
+        gap: 6px;
+    }
+    
+    .color-tags-container.expanded {
+        max-height: 250px !important; /* Expanded height on mobile */
+    }
+    
+    .color-tag {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        margin: 2px;
+    }
+    
+    .color-toggle-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: white;
+    }
+    
+    /* Make button more touch-friendly */
+    .color-toggle-btn:active {
+        transform: scale(0.98);
+        background: var(--primary);
+        color: white;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .color-tags-container {
+        max-height: 90px !important;
+        gap: 4px;
+    }
+    
+    .color-tags-container.expanded {
+        max-height: 200px !important;
+    }
+    
+    .color-tag {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        margin: 1px;
+    }
+    
+    .color-toggle-btn {
+        padding: 8px 14px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation for smoother expansion */
+.color-tags-container {
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure toggle button is always visible when needed */
+.color-toggle-btn.force-show {
+    display: flex !important;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Add a subtle gradient at the bottom when collapsed */
+.color-tags-container:not(.expanded) {
+    position: relative;
+}
+
+.color-tags-container:not(.expanded)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, #f8f9fa 80%);
+    pointer-events: none;
+}
