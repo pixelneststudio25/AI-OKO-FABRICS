@@ -362,73 +362,96 @@ function generateColorFilters(products) {
 
 // --- FUNCTION: Expand/Collapse Color Filter Toggle ---
 // --- FUNCTION: Expand/Collapse Color Filter Toggle ---
+// --- FUNCTION: Expand/Collapse Color Filter Toggle ---
 function initColorFilterToggle() {
     const colorContainer = document.getElementById('colorTagsContainer');
     const toggleBtn = document.getElementById('colorToggleBtn');
     
     if (!colorContainer || !toggleBtn) return;
     
-    const toggleText = toggleBtn.querySelector('span');
-    const toggleIcon = toggleBtn.querySelector('i');
+    const toggleText = toggleBtn.querySelector('.toggle-text');
+    const toggleIcon = toggleBtn.querySelector('.toggle-icon');
     
     let isExpanded = false;
     
-    // Function to check if we should show the toggle
-    function shouldShowToggle() {
-        const colorTags = colorContainer.querySelectorAll('.color-tag');
-        if (colorTags.length === 0) return false;
-        
-        // Different thresholds for mobile vs desktop
-        const isMobile = window.innerWidth <= 768;
-        const threshold = isMobile ? 4 : 6; // Show toggle with fewer tags on mobile
-        
-        return colorTags.length > threshold;
-    }
-    
-    // Function to update toggle state
-    function updateToggleState() {
-        const shouldShow = shouldShowToggle();
-        
-        if (shouldShow) {
-            toggleBtn.style.display = 'flex';
-            
-            if (!isExpanded) {
-                colorContainer.style.maxHeight = '120px'; // Smaller on mobile by default
-                colorContainer.style.overflow = 'hidden';
-            }
+    // Function to update toggle button text
+    function updateToggleButton() {
+        if (isExpanded) {
+            toggleText.textContent = 'Show Less Colors';
+            toggleIcon.className = 'fas fa-chevron-up toggle-icon';
+            toggleBtn.classList.add('expanded');
+            colorContainer.classList.add('expanded');
         } else {
-            toggleBtn.style.display = 'none';
-            colorContainer.style.maxHeight = 'none';
-            colorContainer.style.overflow = 'visible';
+            toggleText.textContent = 'Show More Colors';
+            toggleIcon.className = 'fas fa-chevron-down toggle-icon';
+            toggleBtn.classList.remove('expanded');
+            colorContainer.classList.remove('expanded');
         }
     }
     
-    // Initialize toggle state
-    updateToggleState();
+    // Function to set initial state
+    function setInitialState() {
+        const colorTags = colorContainer.querySelectorAll('.color-tag');
+        const isMobile = window.innerWidth <= 768;
+        
+        // Always show toggle button
+        toggleBtn.style.display = 'flex';
+        
+        // Set initial height based on device
+        if (isMobile) {
+            colorContainer.style.maxHeight = '100px';
+        } else {
+            colorContainer.style.maxHeight = '150px';
+        }
+        
+        // Update button text
+        updateToggleButton();
+    }
+    
+    // Initialize
+    setInitialState();
     
     // Update on window resize
-    window.addEventListener('resize', updateToggleState);
+    window.addEventListener('resize', setInitialState);
     
     // Toggle button click handler
     toggleBtn.addEventListener('click', function() {
         const isMobile = window.innerWidth <= 768;
         
-        if (isExpanded) {
-            // Collapse the container
-            colorContainer.classList.remove('expanded');
-            toggleText.textContent = 'Show More Colors';
-            toggleIcon.className = 'fas fa-chevron-down';
-            toggleBtn.classList.remove('expanded');
-            colorContainer.style.maxHeight = isMobile ? '120px' : '150px';
-        } else {
-            // Expand the container
-            colorContainer.classList.add('expanded');
-            toggleText.textContent = 'Show Less';
-            toggleIcon.className = 'fas fa-chevron-up';
-            toggleBtn.classList.add('expanded');
-            colorContainer.style.maxHeight = isMobile ? '300px' : '400px';
-        }
         isExpanded = !isExpanded;
+        
+        if (isExpanded) {
+            // Expand container
+            colorContainer.style.maxHeight = isMobile ? '250px' : '400px';
+            colorContainer.style.overflowY = 'auto';
+        } else {
+            // Collapse container
+            colorContainer.style.maxHeight = isMobile ? '100px' : '150px';
+            colorContainer.style.overflowY = 'hidden';
+        }
+        
+        updateToggleButton();
+        
+        // Scroll into view on mobile when expanding
+        if (isExpanded && isMobile) {
+            setTimeout(() => {
+                colorContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+        }
+    });
+    
+    // Add event listeners to color tags for better UX
+    const colorTags = colorContainer.querySelectorAll('.color-tag');
+    colorTags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            // If container is expanded on mobile, collapse it after selection
+            if (isExpanded && window.innerWidth <= 768) {
+                isExpanded = false;
+                colorContainer.style.maxHeight = '100px';
+                colorContainer.style.overflowY = 'hidden';
+                updateToggleButton();
+            }
+        });
     });
 }
 
