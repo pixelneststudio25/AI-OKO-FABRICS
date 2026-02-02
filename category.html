@@ -232,8 +232,37 @@
             </div>
         </div>
     </section>
+    
+    <!-- Design Gallery -->
+    <section class="design-gallery-section">
+        <div class="container">
+            <!-- Fabric Type Filter Section (For Ankara Only) -->
+            <div class="fabric-filter-section hidden" id="fabricFilterSection">
+                <div class="filter-section-header">
+                    <h3><i class="fas fa-filter"></i> Filter by Fabric Type</h3>
+                    <p>Select specific Ankara fabric types</p>
+                </div>
+                
+                <!-- Fabric Type Filter Bar -->
+                <div class="fabric-filter-bar">
+                    <div class="fabric-tags-container" id="fabric-tags">
+                        <!-- Fabric type tags will be generated here -->
+                        <div class="loading-tags">
+                            <i class="fas fa-spinner fa-spin"></i> Loading fabric types...
+                        </div>
+                    </div>
+                    <button class="fabric-toggle-btn" id="fabricToggleBtn">
+                        <span class="toggle-text">Show All Types</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </button>
+                </div>
 
-            <!-- Design Gallery with Infinite Scroll -->
+                <!-- Active Filters Display -->
+                <div class="active-filters" id="active-filters">
+                    <!-- Active filters will appear here -->
+                </div>
+            </div>
+
             <div class="design-gallery" id="design-gallery">
                 <div class="gallery-header">
                     <h2 id="gallery-title">Ankara Collection</h2>
@@ -241,10 +270,9 @@
                         <span>Sort by:</span>
                         <select id="sort-by">
                             <option value="popular">Most Popular</option>
-                            <option value="newest">Newest First</option>
+                            <option value="name">Name</option>
                             <option value="price-low">Price: Low to High</option>
                             <option value="price-high">Price: High to Low</option>
-                            <option value="color-group">Color Groups</option>
                         </select>
                     </div>
                 </div>
@@ -257,22 +285,24 @@
                     </div>
                 </div>
 
-                <!-- Infinite Scroll Loader -->
-                <div class="infinite-scroll-loader" id="infinite-loader">
-                    <div class="loader-spinner"></div>
-                    <p>Loading more beautiful designs...</p>
-                </div>
-
-                <!-- End of Results -->
-                <div class="end-of-results" id="end-of-results">
-                    <p>You've seen all available designs in this category!</p>
-                    <button class="btn-primary" onclick="galleryScrollToTop()">
-                        <i class="fas fa-arrow-up"></i> Back to Top
+                <!-- Load More Button Container -->
+                <div class="load-more-container" id="loadMoreContainer">
+                    <button class="load-more-btn" id="loadMoreBtn">
+                        <span class="btn-text">Load More Designs</span>
+                        <i class="fas fa-plus btn-icon"></i>
                     </button>
+                    <div class="products-count" id="productsCount">
+                        Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> designs
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top-btn" id="backToTopBtn">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <!-- Quick View Modal -->
     <div class="modal quick-view-modal" id="quickViewModal">
@@ -308,6 +338,7 @@
                     <h3>Store Categories</h3>
                     <ul>
                         <li><a href="category.html?cat=ankara">Ankara Fabrics</a></li>
+                        <li><a href="category.html?cat=premium-fabrics">Premium Fabrics</a></li> 
                         <li><a href="category.html?cat=brocades">Brocades</a></li>
                         <li><a href="category.html?cat=adires">Adires</a></li>
                         <li><a href="category.html?cat=laces">Laces</a></li>
@@ -333,11 +364,11 @@
 
     <!-- JavaScript Files -->
     <script src="js/products-data.js"></script>
-    <script src="js/store.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/store.js"></script>
     
     <script>
-        // GALLERY MODULE - Self-contained to avoid conflicts
+        // GALLERY MODULE - Updated for Ankara and Premium Fabrics
         const ColorGallery = (function() {
             // Private variables
             let galleryAllDesigns = [];
@@ -346,8 +377,12 @@
             const GALLERY_PAGE_SIZE = 12;
             let galleryIsLoading = false;
             let galleryCurrentColorFilter = 'all';
+            let galleryCurrentSubcategoryFilter = 'all';
             let galleryCurrentSort = 'popular';
             let galleryCurrentCategory = '';
+            
+            // Define which categories should show fabric filters
+            const fabricFilterCategories = ['ankara', 'premium-fabrics'];
             
             // Color hex mapping
             const colorHexMap = {
@@ -381,6 +416,15 @@
                     sizeDetail: 'Primarily 6 yards per piece',
                     priceRange: '₦5,000 - ₦297,000',
                     collectionTitle: 'Ankara Collection'
+                },
+                'premium-fabrics': {
+                    title: 'Premium Fabrics',
+                    description: 'Luxury imported fabrics including Dutch Wax, Julius Holland, Vlisco, and other high-end brands.',
+                    sizeTitle: 'Premium Size',
+                    sizeDetail: '6 yards per piece (Luxury Quality)',
+                    priceRange: '₦80,000 - ₦300,000+',
+                    collectionTitle: 'Premium Collection',
+                    isPremium: true
                 },
                 'laces': {
                     title: 'Laces',
@@ -433,17 +477,53 @@
                     // Update page info
                     this.updatePageInfo(category);
                     
+                    // Show/hide fabric filter section based on category
+                    this.toggleFabricFilterSection(category);
+                    
                     // Generate color filters
                     this.generateColorFilters();
+                    
+                    // Generate fabric type filters for applicable categories
+                    if (fabricFilterCategories.includes(category)) {
+                        this.generateFabricTypeFilters();
+                    }
+                    
+                    // Initialize load more button
+                    this.initLoadMoreButton();
+                    
+                    // Initialize back to top button
+                    this.initBackToTop();
                     
                     // Load initial designs
                     this.filterAndDisplayDesigns();
                     
                     // Setup event listeners
                     this.setupEventListeners();
+                },
+
+                // UPDATED: Toggle fabric filter section visibility
+                toggleFabricFilterSection: function(category) {
+                    const fabricSection = document.getElementById('fabricFilterSection');
+                    if (!fabricSection) return;
                     
-                    // Setup infinite scroll
-                    this.setupInfiniteScroll();
+                    // Show for both Ankara and Premium Fabrics
+                    if (fabricFilterCategories.includes(category)) {
+                        fabricSection.classList.remove('hidden');
+                        
+                        // Update header text based on category
+                        const header = fabricSection.querySelector('h3');
+                        const description = fabricSection.querySelector('p');
+                        
+                        if (category === 'premium-fabrics') {
+                            header.innerHTML = '<i class="fas fa-crown"></i> Filter by Premium Brand';
+                            description.textContent = 'Select specific premium fabric brands like Dutch Wax, Julius Holland, Vlisco, etc.';
+                        } else if (category === 'ankara') {
+                            header.innerHTML = '<i class="fas fa-filter"></i> Filter by Fabric Type';
+                            description.textContent = 'Select specific Ankara fabric types like Hi-Target, Cotonou Wax, Super Wax, etc.';
+                        }
+                    } else {
+                        fabricSection.classList.add('hidden');
+                    }
                 },
                 
                 updatePageInfo: function(category) {
@@ -457,6 +537,109 @@
                     document.getElementById('size-detail').textContent = config.sizeDetail;
                     document.getElementById('price-range').textContent = config.priceRange;
                     document.getElementById('gallery-title').textContent = config.collectionTitle;
+                },
+                
+                // NEW: Initialize Load More Button
+                initLoadMoreButton: function() {
+                    const loadMoreBtn = document.getElementById('loadMoreBtn');
+                    const loadMoreContainer = document.getElementById('loadMoreContainer');
+                    
+                    if (!loadMoreBtn || !loadMoreContainer) return;
+                    
+                    loadMoreBtn.addEventListener('click', async function() {
+                        if (galleryIsLoading) return;
+                        
+                        // Show loading state
+                        this.classList.add('loading');
+                        this.innerHTML = '<span class="btn-text">Loading...</span><i class="fas fa-spinner btn-icon"></i>';
+                        galleryIsLoading = true;
+                        
+                        // Add slight delay for better UX
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
+                        // Load next batch
+                        const hasMore = ColorGallery.loadMoreDesigns();
+                        
+                        // Update button state
+                        this.classList.remove('loading');
+                        this.innerHTML = '<span class="btn-text">Load More Designs</span><i class="fas fa-plus btn-icon"></i>';
+                        galleryIsLoading = false;
+                        
+                        // Hide button if no more products
+                        if (!hasMore) {
+                            loadMoreContainer.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Initial state
+                    this.updateProductsCount();
+                },
+                
+                // MODIFIED: Load more designs with return value
+                loadMoreDesigns: function() {
+                    const start = galleryCurrentPage * GALLERY_PAGE_SIZE;
+                    const end = start + GALLERY_PAGE_SIZE;
+                    const designsToShow = galleryFilteredDesigns.slice(start, end);
+                    
+                    if (designsToShow.length === 0) {
+                        return false; // No more products
+                    }
+                    
+                    // Simulate loading
+                    setTimeout(() => {
+                        this.renderDesigns(designsToShow);
+                        galleryCurrentPage++;
+                        
+                        // Update products count
+                        this.updateProductsCount();
+                    }, 300);
+                    
+                    return designsToShow.length === GALLERY_PAGE_SIZE; // Returns true if there might be more products
+                },
+                
+                // NEW: Update products count display
+                updateProductsCount: function() {
+                    const showingElement = document.getElementById('showingCount');
+                    const totalElement = document.getElementById('totalCount');
+                    const loadMoreContainer = document.getElementById('loadMoreContainer');
+                    
+                    if (!showingElement || !totalElement || !loadMoreContainer) return;
+                    
+                    const total = galleryFilteredDesigns.length;
+                    const showing = Math.min(galleryCurrentPage * GALLERY_PAGE_SIZE, total);
+                    
+                    showingElement.textContent = showing;
+                    totalElement.textContent = total;
+                    
+                    // Show/hide load more button
+                    if (showing >= total) {
+                        loadMoreContainer.classList.add('hidden');
+                    } else {
+                        loadMoreContainer.classList.remove('hidden');
+                    }
+                },
+                
+                // NEW: Initialize Back to Top Button
+                initBackToTop: function() {
+                    const backToTopBtn = document.getElementById('backToTopBtn');
+                    if (!backToTopBtn) return;
+                    
+                    // Show button when scrolled down
+                    window.addEventListener('scroll', () => {
+                        if (window.scrollY > 500) {
+                            backToTopBtn.classList.add('visible');
+                        } else {
+                            backToTopBtn.classList.remove('visible');
+                        }
+                    });
+                    
+                    // Scroll to top when clicked
+                    backToTopBtn.addEventListener('click', () => {
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
                 },
                 
                 generateColorFilters: function() {
@@ -515,14 +698,163 @@
                     console.log('Generated', Object.keys(colorMap).length + 1, 'color filters');
                 },
                 
-                filterAndDisplayDesigns: function() {
-                    // Apply color filter
-                    if (galleryCurrentColorFilter === 'all') {
-                        galleryFilteredDesigns = [...galleryAllDesigns];
+                // UPDATED: Generate Fabric Type Filters from subcategory for multiple categories
+                generateFabricTypeFilters: function() {
+                    const container = document.getElementById('fabric-tags');
+                    if (!container) return;
+                    
+                    // Clear loading message
+                    container.innerHTML = '';
+                    
+                    // Extract unique subcategories from products
+                    const subcategoryMap = {};
+                    galleryAllDesigns.forEach(design => {
+                        if (design.subcategory) {
+                            const subcat = design.subcategory.trim();
+                            subcategoryMap[subcat] = (subcategoryMap[subcat] || 0) + 1;
+                        }
+                    });
+                    
+                    // Add "All Fabrics" button
+                    const allButton = document.createElement('button');
+                    allButton.className = 'fabric-tag active';
+                    allButton.dataset.subcategory = 'all';
+                    
+                    // Different text based on category
+                    if (galleryCurrentCategory === 'premium-fabrics') {
+                        allButton.innerHTML = `
+                            <i class="fas fa-crown"></i>
+                            All Premium Brands <span class="tag-count">(${galleryAllDesigns.length})</span>
+                        `;
                     } else {
-                        galleryFilteredDesigns = galleryAllDesigns.filter(design => {
+                        allButton.innerHTML = `
+                            <i class="fas fa-layer-group"></i>
+                            All Fabric Types <span class="tag-count">(${galleryAllDesigns.length})</span>
+                        `;
+                    }
+                    
+                    container.appendChild(allButton);
+                    
+                    // Add subcategory buttons
+                    Object.entries(subcategoryMap).forEach(([subcategory, count]) => {
+                        const button = document.createElement('button');
+                        button.className = 'fabric-tag';
+                        button.dataset.subcategory = subcategory;
+                        
+                        // Add icon based on subcategory name
+                        let icon = 'fas fa-tshirt'; // default icon
+                        const subcatLower = subcategory.toLowerCase();
+                        
+                        // Premium fabric icons
+                        if (galleryCurrentCategory === 'premium-fabrics') {
+                            if (subcatLower.includes('dutch') || subcatLower.includes('vlisco') || subcatLower.includes('holland')) {
+                                icon = 'fas fa-crown';
+                            } else if (subcatLower.includes('wax')) {
+                                icon = 'fas fa-gem';
+                            }
+                        } else {
+                            // Ankara fabric icons
+                            if (subcatLower.includes('wax')) icon = 'fas fa-fire';
+                            if (subcatLower.includes('lace')) icon = 'fas fa-snowflake';
+                            if (subcatLower.includes('linen')) icon = 'fas fa-leaf';
+                            if (subcatLower.includes('voile')) icon = 'fas fa-wind';
+                            if (subcatLower.includes('java')) icon = 'fas fa-star';
+                            if (subcatLower.includes('hitarget') || subcatLower.includes('hi-target')) icon = 'fas fa-bullseye';
+                            if (subcatLower.includes('cotonou')) icon = 'fas fa-palette';
+                        }
+                        
+                        button.innerHTML = `
+                            <i class="${icon}"></i>
+                            ${subcategory} <span class="tag-count">(${count})</span>
+                        `;
+                        
+                        container.appendChild(button);
+                    });
+                    
+                    // Initialize fabric filter toggle
+                    this.initFabricFilterToggle();
+                },
+                
+                // NEW: Initialize fabric filter toggle
+                initFabricFilterToggle: function() {
+                    const fabricContainer = document.getElementById('fabric-tags');
+                    const fabricToggleBtn = document.getElementById('fabricToggleBtn');
+                    
+                    if (!fabricContainer || !fabricToggleBtn) return;
+                    
+                    const toggleText = fabricToggleBtn.querySelector('.toggle-text');
+                    const toggleIcon = fabricToggleBtn.querySelector('.toggle-icon');
+                    
+                    let isExpanded = false;
+                    
+                    function updateToggleButton() {
+                        if (isExpanded) {
+                            toggleText.textContent = 'Show Less Types';
+                            toggleIcon.className = 'fas fa-chevron-up toggle-icon';
+                            fabricToggleBtn.classList.add('expanded');
+                            fabricContainer.classList.add('expanded');
+                        } else {
+                            if (galleryCurrentCategory === 'premium-fabrics') {
+                                toggleText.textContent = 'Show All Brands';
+                            } else {
+                                toggleText.textContent = 'Show All Types';
+                            }
+                            toggleIcon.className = 'fas fa-chevron-down toggle-icon';
+                            fabricToggleBtn.classList.remove('expanded');
+                            fabricContainer.classList.remove('expanded');
+                        }
+                    }
+                    
+                    function setInitialState() {
+                        const isMobile = window.innerWidth <= 768;
+                        
+                        if (isMobile) {
+                            fabricContainer.style.maxHeight = '120px';
+                        } else {
+                            fabricContainer.style.maxHeight = '150px';
+                        }
+                        
+                        updateToggleButton();
+                    }
+                    
+                    setInitialState();
+                    window.addEventListener('resize', setInitialState);
+                    
+                    fabricToggleBtn.addEventListener('click', function() {
+                        const isMobile = window.innerWidth <= 768;
+                        isExpanded = !isExpanded;
+                        
+                        if (isExpanded) {
+                            fabricContainer.style.maxHeight = isMobile ? '250px' : '400px';
+                            fabricContainer.style.overflowY = 'auto';
+                        } else {
+                            fabricContainer.style.maxHeight = isMobile ? '120px' : '150px';
+                            fabricContainer.style.overflowY = 'hidden';
+                        }
+                        
+                        updateToggleButton();
+                    });
+                },
+                
+                // UPDATED: Now includes subcategory filtering for multiple categories
+                filterAndDisplayDesigns: function() {
+                    // Start with all designs
+                    galleryFilteredDesigns = [...galleryAllDesigns];
+                    
+                    // Apply color filter
+                    if (galleryCurrentColorFilter !== 'all') {
+                        galleryFilteredDesigns = galleryFilteredDesigns.filter(design => {
                             if (!design.colors) return false;
                             return design.colors.join(' & ') === galleryCurrentColorFilter;
+                        });
+                    }
+                    
+                    // Apply subcategory filter for categories that support it
+                    if (fabricFilterCategories.includes(galleryCurrentCategory) && 
+                        galleryCurrentSubcategoryFilter !== 'all') {
+                        galleryFilteredDesigns = galleryFilteredDesigns.filter(design => {
+                            return design.subcategory && 
+                                design.subcategory.trim() === galleryCurrentSubcategoryFilter;
                         });
                     }
                     
@@ -535,10 +867,18 @@
                     // Update title
                     this.updateGalleryTitle();
                     
+                    // Update active filters display for applicable categories
+                    if (fabricFilterCategories.includes(galleryCurrentCategory)) {
+                        this.updateActiveFilters();
+                    }
+                    
                     // Clear and display designs
                     const grid = document.getElementById('designs-grid');
-                    if (grid) {
+                    const loadMoreContainer = document.getElementById('loadMoreContainer');
+                    
+                    if (grid && loadMoreContainer) {
                         grid.innerHTML = '';
+                        loadMoreContainer.classList.remove('hidden');
                         this.loadMoreDesigns();
                     }
                 },
@@ -569,36 +909,7 @@
                     }
                 },
                 
-                loadMoreDesigns: function() {
-                    if (galleryIsLoading) return;
-                    
-                    const start = galleryCurrentPage * GALLERY_PAGE_SIZE;
-                    const end = start + GALLERY_PAGE_SIZE;
-                    const designsToShow = galleryFilteredDesigns.slice(start, end);
-                    
-                    if (designsToShow.length === 0) {
-                        this.showEndOfResults();
-                        return;
-                    }
-                    
-                    galleryIsLoading = true;
-                    this.showLoader(true);
-                    
-                    // Simulate loading
-                    setTimeout(() => {
-                        this.renderDesigns(designsToShow);
-                        galleryCurrentPage++;
-                        galleryIsLoading = false;
-                        this.showLoader(false);
-                        
-                        // Hide end message if we have more
-                        const endMsg = document.getElementById('end-of-results');
-                        if (endMsg && end < galleryFilteredDesigns.length) {
-                            endMsg.classList.remove('show');
-                        }
-                    }, 300);
-                },
-                
+                // UPDATED: Now shows fabric badges for multiple categories and premium badge
                 renderDesigns: function(designs) {
                     const grid = document.getElementById('designs-grid');
                     if (!grid) return;
@@ -609,18 +920,35 @@
                             `<span class="mini-dot" style="background-color: ${this.getColorHex(color)}"></span>`
                         ).join('');
                         
+                        // Add subcategory badge for fabric filter categories
+                        let subcategoryBadge = '';
+                        if (fabricFilterCategories.includes(galleryCurrentCategory) && design.subcategory) {
+                            subcategoryBadge = `<div class="fabric-badge">${design.subcategory}</div>`;
+                        }
+                        
+                        // Add premium badge for premium category
+                        let premiumBadge = '';
+                        if (galleryCurrentCategory === 'premium-fabrics') {
+                            premiumBadge = `<div class="premium-badge"><i class="fas fa-crown"></i> Premium</div>`;
+                        }
+                        
                         const card = document.createElement('div');
                         card.className = 'design-card';
-                        card.style.animationDelay = `${index * 0.1}s`;
+                        if (galleryCurrentCategory === 'premium-fabrics') {
+                            card.classList.add('premium-card');
+                        }
+                        card.style.setProperty('--index', index);
                         
                         card.innerHTML = `
                             <div class="design-img">
                                 <img src="${design.image}" alt="${design.name}" 
-                                     onerror="this.src='data:image/svg+xml;charset=UTF-8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 250\"><rect width=\"300\" height=\"250\" fill=\"%23f3f4f6\"/><text x=\"150\" y=\"125\" font-family=\"Arial\" font-size=\"14\" fill=\"%236b7280\" text-anchor=\"middle\">${design.name}</text></svg>'">
+                                    onerror="this.src='data:image/svg+xml;charset=UTF-8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 250\"><rect width=\"300\" height=\"250\" fill=\"%23f3f4f6\"/><text x=\"150\" y=\"125\" font-family=\"Arial\" font-size=\"14\" fill=\"%236b7280\" text-anchor=\"middle\">${design.name}</text></svg>'">
                                 <div class="color-combination-badge">
                                     <div class="color-dots">${colorDots}</div>
                                     <span>${colors.join(' & ')}</span>
                                 </div>
+                                ${subcategoryBadge}
+                                ${premiumBadge}
                                 <button class="quick-view-btn" onclick="ColorGallery.showQuickView('${design.id}')">
                                     <i class="fas fa-expand"></i>
                                 </button>
@@ -628,7 +956,7 @@
                             <div class="design-info">
                                 <h4>${design.name}</h4>
                                 <div class="design-meta">
-                                    <span class="design-subcategory">${design.subcategory || 'Premium'}</span>
+                                    <span class="design-subcategory">${design.subcategory || (galleryCurrentCategory === 'premium-fabrics' ? 'Premium Brand' : 'Premium')}</span>
                                     <span class="design-price">₦${design.price.toLocaleString('en-NG')}</span>
                                 </div>
                                 <div class="product-actions">
@@ -651,6 +979,7 @@
                     });
                 },
                 
+                // UPDATED: Now includes fabric type filter events for multiple categories
                 setupEventListeners: function() {
                     // Color tag clicks
                     const colorTags = document.getElementById('color-tags');
@@ -667,6 +996,25 @@
                             
                             // Update filter and reload
                             galleryCurrentColorFilter = colorTag.dataset.color;
+                            this.filterAndDisplayDesigns();
+                        });
+                    }
+                    
+                    // Fabric type tag clicks (for applicable categories)
+                    const fabricTags = document.getElementById('fabric-tags');
+                    if (fabricTags) {
+                        fabricTags.addEventListener('click', (e) => {
+                            const fabricTag = e.target.closest('.fabric-tag');
+                            if (!fabricTag) return;
+                            
+                            // Update active state
+                            document.querySelectorAll('.fabric-tag').forEach(tag => {
+                                tag.classList.remove('active');
+                            });
+                            fabricTag.classList.add('active');
+                            
+                            // Update filter and reload
+                            galleryCurrentSubcategoryFilter = fabricTag.dataset.subcategory;
                             this.filterAndDisplayDesigns();
                         });
                     }
@@ -692,20 +1040,146 @@
                     }
                 },
                 
-                setupInfiniteScroll: function() {
-                    const observer = new IntersectionObserver((entries) => {
-                        if (entries[0].isIntersecting && !galleryIsLoading) {
-                            const start = galleryCurrentPage * GALLERY_PAGE_SIZE;
-                            if (start < galleryFilteredDesigns.length) {
-                                this.loadMoreDesigns();
-                            }
-                        }
-                    }, { threshold: 0.5 });
+                // UPDATED: Now works for multiple categories
+                updateActiveFilters: function() {
+                    // Only show active filters for applicable categories
+                    if (!fabricFilterCategories.includes(galleryCurrentCategory)) return;
+
+                    const activeFiltersContainer = document.getElementById('active-filters');
+                    if (!activeFiltersContainer) return;
                     
-                    const loader = document.getElementById('infinite-loader');
-                    if (loader) {
-                        observer.observe(loader);
+                    activeFiltersContainer.innerHTML = '';
+                    
+                    const activeFilters = [];
+                    
+                    // Add color filter if active
+                    if (galleryCurrentColorFilter !== 'all') {
+                        activeFilters.push({
+                            type: 'color',
+                            value: galleryCurrentColorFilter,
+                            label: galleryCurrentColorFilter.replace(/-/g, ' ').toUpperCase()
+                        });
                     }
+                    
+                    // Add subcategory filter if active
+                    if (galleryCurrentSubcategoryFilter !== 'all') {
+                        activeFilters.push({
+                            type: galleryCurrentCategory === 'premium-fabrics' ? 'brand' : 'fabric',
+                            value: galleryCurrentSubcategoryFilter,
+                            label: galleryCurrentSubcategoryFilter
+                        });
+                    }
+                    
+                    // If no active filters, show message
+                    if (activeFilters.length === 0) {
+                        const noFilters = document.createElement('div');
+                        noFilters.className = 'no-active-filters';
+                        noFilters.innerHTML = `
+                            <i class="fas fa-filter"></i>
+                            <span>No filters applied. Showing all ${galleryAllDesigns.length} designs.</span>
+                        `;
+                        activeFiltersContainer.appendChild(noFilters);
+                        return;
+                    }
+                    
+                    // Add active filter badges
+                    activeFilters.forEach(filter => {
+                        const badge = document.createElement('div');
+                        badge.className = 'filter-badge';
+                        
+                        let filterType = filter.type;
+                        if (filter.type === 'brand') {
+                            filterType = 'BRAND';
+                        } else if (filter.type === 'fabric') {
+                            filterType = 'FABRIC';
+                        } else {
+                            filterType = 'COLOR';
+                        }
+                        
+                        badge.innerHTML = `
+                            <span>${filterType}: ${filter.label}</span>
+                            <button class="remove-filter" data-type="${filter.type}" data-value="${filter.value}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        activeFiltersContainer.appendChild(badge);
+                    });
+                    
+                    // Add clear all button
+                    if (activeFilters.length > 0) {
+                        const clearButton = document.createElement('button');
+                        clearButton.className = 'clear-filters-btn';
+                        clearButton.innerHTML = '<i class="fas fa-times-circle"></i> Clear All Filters';
+                        clearButton.addEventListener('click', () => {
+                            this.clearAllFilters();
+                        });
+                        activeFiltersContainer.appendChild(clearButton);
+                    }
+                    
+                    // Add event listeners to remove buttons
+                    activeFiltersContainer.querySelectorAll('.remove-filter').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const type = e.currentTarget.dataset.type;
+                            const value = e.currentTarget.dataset.value;
+                            
+                            if (type === 'color') {
+                                this.removeColorFilter(value);
+                            } else if (type === 'subcategory' || type === 'brand' || type === 'fabric') {
+                                this.removeSubcategoryFilter(value);
+                            }
+                        });
+                    });
+                },
+                
+                // NEW: Remove color filter
+                removeColorFilter: function(colorValue) {
+                    // Reset color filter to 'all'
+                    galleryCurrentColorFilter = 'all';
+                    
+                    // Update UI
+                    document.querySelectorAll('.color-tag').forEach(tag => {
+                        tag.classList.remove('active');
+                        if (tag.dataset.color === 'all') tag.classList.add('active');
+                    });
+                    
+                    // Re-apply filters
+                    this.filterAndDisplayDesigns();
+                },
+                
+                // NEW: Remove subcategory filter
+                removeSubcategoryFilter: function(subcategoryValue) {
+                    // Reset subcategory filter to 'all'
+                    galleryCurrentSubcategoryFilter = 'all';
+                    
+                    // Update UI
+                    document.querySelectorAll('.fabric-tag').forEach(tag => {
+                        tag.classList.remove('active');
+                        if (tag.dataset.subcategory === 'all') tag.classList.add('active');
+                    });
+                    
+                    // Re-apply filters
+                    this.filterAndDisplayDesigns();
+                },
+                
+                // NEW: Clear all filters
+                clearAllFilters: function() {
+                    // Reset both filters
+                    galleryCurrentColorFilter = 'all';
+                    galleryCurrentSubcategoryFilter = 'all';
+                    
+                    // Update UI
+                    document.querySelectorAll('.color-tag').forEach(tag => {
+                        tag.classList.remove('active');
+                        if (tag.dataset.color === 'all') tag.classList.add('active');
+                    });
+                    
+                    document.querySelectorAll('.fabric-tag').forEach(tag => {
+                        tag.classList.remove('active');
+                        if (tag.dataset.subcategory === 'all') tag.classList.add('active');
+                    });
+                    
+                    // Re-apply filters
+                    this.filterAndDisplayDesigns();
                 },
                 
                 updateGalleryTitle: function() {
@@ -715,26 +1189,13 @@
                     const config = categoryConfig[galleryCurrentCategory];
                     const categoryName = config ? config.collectionTitle : 'Designs';
                     
-                    if (galleryCurrentColorFilter === 'all') {
+                    if (galleryCurrentColorFilter === 'all' && galleryCurrentSubcategoryFilter === 'all') {
                         title.textContent = `${categoryName} (${galleryFilteredDesigns.length} designs)`;
+                    } else if (galleryCurrentSubcategoryFilter !== 'all') {
+                        title.textContent = `${galleryCurrentSubcategoryFilter} ${categoryName} (${galleryFilteredDesigns.length} designs)`;
                     } else {
                         title.textContent = `${galleryCurrentColorFilter} ${categoryName} (${galleryFilteredDesigns.length} designs)`;
                     }
-                },
-                
-                showLoader: function(show) {
-                    const loader = document.getElementById('infinite-loader');
-                    if (loader) {
-                        loader.style.display = show ? 'block' : 'none';
-                    }
-                },
-                
-                showEndOfResults: function() {
-                    const endMsg = document.getElementById('end-of-results');
-                    if (endMsg) {
-                        endMsg.classList.add('show');
-                    }
-                    this.showLoader(false);
                 },
                 
                 getColorHex: function(colorName) {
@@ -744,12 +1205,7 @@
                 performSearch: function() {
                     const searchTerm = document.getElementById('category-search').value.toLowerCase().trim();
                     if (!searchTerm) {
-                        // Reset to all designs
-                        galleryCurrentColorFilter = 'all';
-                        document.querySelectorAll('.color-tag').forEach(tag => {
-                            tag.classList.remove('active');
-                            if (tag.dataset.color === 'all') tag.classList.add('active');
-                        });
+                        // Reset to all designs with current filters
                         this.filterAndDisplayDesigns();
                         return;
                     }
@@ -767,9 +1223,12 @@
                     
                     // Clear and display results
                     const grid = document.getElementById('designs-grid');
-                    if (grid) {
+                    const loadMoreContainer = document.getElementById('loadMoreContainer');
+                    
+                    if (grid && loadMoreContainer) {
                         grid.innerHTML = '';
                         galleryCurrentPage = 0;
+                        loadMoreContainer.classList.remove('hidden');
                         this.loadMoreDesigns();
                     }
                 },
@@ -798,6 +1257,12 @@
                         `<span class="mini-dot" style="background-color: ${this.getColorHex(color)}"></span>`
                     ).join('');
                     
+                    // Add premium styling to modal if it's a premium product
+                    const isPremium = product.category === 'premium-fabrics';
+                    if (isPremium) {
+                        modal.classList.add('premium-modal');
+                    }
+                    
                     content.innerHTML = `
                         <div class="quick-view-container">
                             <div class="quick-view-image">
@@ -809,6 +1274,7 @@
                                     <span class="category">${product.subcategory || product.category}</span>
                                     <span class="price">₦${product.price.toLocaleString('en-NG')}</span>
                                 </div>
+                                ${isPremium ? '<div class="premium-indicator"><i class="fas fa-crown"></i> Premium Fabric</div>' : ''}
                                 <div class="color-info">
                                     <strong>Color Combination:</strong>
                                     <div class="color-display">
@@ -826,6 +1292,12 @@
                                         <strong>SKU:</strong>
                                         <span>${product.sku || 'N/A'}</span>
                                     </div>
+                                    ${isPremium ? `
+                                    <div class="spec">
+                                        <strong>Quality:</strong>
+                                        <span>Premium Imported Fabric</span>
+                                    </div>
+                                    ` : ''}
                                 </div>
                                 <div class="quick-view-actions">
                                     <button class="add-to-cart-btn" onclick="addToCart('${product.id}'); ColorGallery.closeQuickView();">
@@ -847,6 +1319,7 @@
                     const modal = document.getElementById('quickViewModal');
                     if (modal) {
                         modal.classList.remove('active');
+                        modal.classList.remove('premium-modal');
                     }
                     document.body.style.overflow = 'auto';
                 },
@@ -856,7 +1329,8 @@
                 }
             };
         })();
-                // Add expand/collapse functionality to color filter bar
+        
+        // Add expand/collapse functionality to color filter bar
         function setupColorFilterExpand() {
             const filterBar = document.querySelector('.color-filter-bar');
             const filterHeader = document.querySelector('.color-filter-header');
@@ -908,6 +1382,7 @@
                 }
             });
         }
+        
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing...');
@@ -933,7 +1408,7 @@
             ColorGallery.init(category);
             
             // Initialize the expandable color filters
-            setupColorFilterExpand(); // <-- ADDED THIS LINE
+            setupColorFilterExpand();
             
             // Close modal when clicking outside
             document.addEventListener('click', function(e) {
@@ -960,6 +1435,7 @@
             ColorGallery.closeQuickView();
         };
     </script>
+    
     <!-- Floating Cart Button -->
     <a href="cart.html" class="floating-cart-btn" id="floatingCartBtn">
         <i class="fas fa-shopping-bag"></i>
