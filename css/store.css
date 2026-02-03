@@ -2806,3 +2806,616 @@ footer {
         max-height: 400px !important;
     }
 }
+/* ============================================
+   LOAD MORE BUTTON STYLING
+   ============================================ */
+
+.load-more-container {
+    text-align: center;
+    margin: 40px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 35px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(125, 60, 255, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.load-more-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(125, 60, 255, 0.35);
+}
+
+.load-more-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(125, 60, 255, 0.2);
+}
+
+.load-more-btn .btn-icon {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.load-more-btn:hover .btn-icon {
+    transform: rotate(90deg);
+}
+
+/* Loading state */
+.load-more-btn.loading {
+    background: var(--primary-light);
+    pointer-events: none;
+}
+
+.load-more-btn.loading .btn-text {
+    opacity: 0.8;
+}
+
+.load-more-btn.loading .btn-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Products count display */
+.products-count {
+    margin-top: 15px;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.products-count span {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Hide button when no more products */
+.load-more-container.hidden {
+    display: none;
+}
+
+/* Back to Top Button */
+.back-to-top-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+    box-shadow: 0 4px 15px rgba(125, 60, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(125, 60, 255, 0.4);
+}
+
+/* Products Grid Layout */
+.products-grid, .designs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+/* Animation for new products */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.products-grid .product-card,
+.designs-grid .design-card {
+    animation: fadeInUp 0.4s ease forwards;
+    animation-delay: calc(var(--index, 0) * 0.05s);
+    opacity: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .load-more-btn {
+        padding: 14px 30px;
+        font-size: 1rem;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .load-more-container {
+        margin: 30px 0;
+        padding: 15px;
+    }
+    
+    .products-count {
+        font-size: 0.85rem;
+    }
+    
+    .back-to-top-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .products-grid, .designs-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid, .designs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive columns */
+@media (min-width: 1920px) {
+    .products-grid, .designs-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (min-width: 1440px) and (max-width: 1919px) {
+    .products-grid, .designs-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .products-grid, .designs-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================
+   FABRIC TYPE FILTER STYLING
+   ============================================ */
+
+.fabric-filter-section {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    padding: 30px 0;
+    margin: 20px 0;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.filter-section-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.filter-section-header h3 {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.filter-section-header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* Fabric Filter Bar */
+.fabric-filter-bar {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+}
+
+.fabric-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-height: 150px;
+    overflow-y: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.fabric-tags-container.expanded {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Fabric Type Tags */
+.fabric-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #f3f4ff;
+    border: 2px solid transparent;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.fabric-tag:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(125, 60, 255, 0.15);
+}
+
+.fabric-tag.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(125, 60, 255, 0.2);
+}
+
+.fabric-tag .tag-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.fabric-tag.active .tag-count {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Fabric Toggle Button */
+.fabric-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background: transparent;
+    border: 2px solid #e9ecef;
+    border-radius: 30px;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.fabric-toggle-btn:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.fabric-toggle-btn.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Active Filters Display */
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 25px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    min-height: 60px;
+}
+
+.filter-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.filter-badge .remove-filter {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.filter-badge .remove-filter:hover {
+    background: rgba(125, 60, 255, 0.1);
+}
+
+.clear-filters-btn {
+    padding: 8px 20px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+    background: #e9ecef;
+    color: var(--text);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .fabric-filter-section {
+        padding: 20px 15px;
+        margin: 15px 0;
+        border-radius: 10px;
+    }
+    
+    .fabric-filter-bar {
+        padding: 15px;
+    }
+    
+    .fabric-tags-container {
+        max-height: 120px;
+        gap: 8px;
+    }
+    
+    .fabric-tags-container.expanded {
+        max-height: 300px;
+    }
+    
+    .fabric-tag {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .active-filters {
+        padding: 12px;
+        min-height: 50px;
+    }
+}
+
+/* Fabric Badge on Design Cards */
+.design-card .fabric-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(125, 60, 255, 0.9);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* No Active Filters Message */
+.no-active-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    padding: 10px;
+}
+
+.no-active-filters i {
+    color: var(--primary-light);
+}
+
+.design-card .design-subcategory {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 10px;
+}
+/* Hide elements with hidden class */
+.hidden {
+    display: none !important;
+}
+
+/* ============================================
+   PREMIUM FABRICS STYLING
+   ============================================ */
+
+/* Premium badge */
+.design-card .premium-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #8B4513;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
+}
+
+.design-card .premium-badge i {
+    font-size: 0.7rem;
+}
+
+/* Premium card styling */
+.design-card.premium-card {
+    border: 2px solid #FFD700;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.design-card.premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    z-index: 1;
+}
+
+.design-card.premium-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(255, 215, 0, 0.25);
+}
+
+/* Premium price styling */
+.design-card.premium-card .design-price {
+    color: #B8860B;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+/* Premium fabric category hero */
+.category-hero.premium-hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+}
+
+.category-hero.premium-hero h1 {
+    color: #FFD700;
+}
+
+.category-hero.premium-hero .category-search input {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #FFD700;
+    color: white;
+}
+
+.category-hero.premium-hero .category-search input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.category-hero.premium-hero .search-btn {
+    background: #FFD700;
+    color: #1a1a2e;
+}
+
+.category-hero.premium-hero .search-btn:hover {
+    background: #FFA500;
+}
+
+/* Premium info cards */
+.category-info .info-card.premium-info {
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFEBCD 100%);
+    border: 2px solid #FFD700;
+}
+
+.category-info .info-card.premium-info i {
+    color: #B8860B;
+}
+
+/* Premium fabric type tags */
+.fabric-tag.premium-tag {
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFEBCD 100%);
+    border: 2px solid #FFD700;
+    color: #8B4513;
+}
+
+.fabric-tag.premium-tag:hover {
+    background: linear-gradient(135deg, #FFEBCD 0%, #FFD700 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 215, 0, 0.3);
+}
+
+.fabric-tag.premium-tag.active {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #8B4513;
+    border-color: #FFA500;
+}
+
+/* Premium filter section */
+.fabric-filter-section.premium-section {
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFEBCD 100%);
+    border: 2px solid #FFD700;
+}
+
+.fabric-filter-section.premium-section .filter-section-header h3 {
+    color: #B8860B;
+}
+
+/* Premium quick view modal */
+.modal.premium-modal .modal-content {
+    border: 3px solid #FFD700;
+}
+
+.modal.premium-modal .modal-close {
+    color: #B8860B;
+}
+
+.modal.premium-modal .quick-view-meta .price {
+    color: #B8860B;
+}
+
+/* Premium floating cart button */
+.floating-cart-btn.premium-cart {
+    background: #FFD700;
+    color: #1a1a2e;
+}
+
+.floating-cart-btn.premium-cart:hover {
+    background: #FFA500;
+}
